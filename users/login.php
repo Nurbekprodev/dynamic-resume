@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once 'db_connect.php';
-require_once 'includes/functions.php';
+require_once '../includes/db_connect.php';
+require_once '../includes/functions.php';
 
 $error = [
     'username' => '',
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($user && password_verify($password, $user['password'])) {
             session_regenerate_id(true);
             $_SESSION['admin_id'] = $user['id'];
-            header("Location: admin/dashboard.php");
+            header("Location: ../admin/dashboard.php");
             exit;
         } else {
             $error['password'] = 'Invalid username or password';
@@ -50,6 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Admin Login</title>
 </head>
 <body>
+    <?php if(isset($_GET['registered'])): ?>
+        <p style='color:green;'>Registration successful! Please login.</p>
+    <?php endif ?>
     <form action="" method="POST">
         <input type="text" name="username" placeholder="Username" required value="<?= isset($username) ? $username : '' ?>">
         <br><?= $error['username'] ?><br>

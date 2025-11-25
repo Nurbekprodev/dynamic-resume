@@ -29,4 +29,9 @@ function validate_name($name, $field_name = "Name") {
     if (!preg_match("/^[a-zA-Z\s'-]+$/", $name)) return "$field_name contains invalid characters.";
     return true; // valid
 }
+
+// Sanitize any input for safe output
+function sanitize_input($input) {
+    return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
+}
 ?>
