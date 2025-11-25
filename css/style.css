@@ -1,0 +1,133 @@
+/* ------------------------
+   VARIABLES
+------------------------- */
+:root {
+    /* Colors */
+    --primary-color: #1a73e8;
+    --secondary-color: #f1f3f4;
+    --text-color: #333;
+    --heading-color: #111;
+    --border-color: #e0e0e0;
+
+    /* Font sizes */
+    --font-size-base: 16px;
+    --font-size-small: 14px;
+    --font-size-large: 20px;
+    --font-size-heading: 24px;
+
+    /* Spacing */
+    --padding-base: 16px;
+    --margin-base: 16px;
+    --section-gap: 32px;
+
+    /* Borders */
+    --border-radius: 6px;
+    --border-width: 1px;
+}
+
+/* ------------------------
+   GLOBAL RESET / BASE
+------------------------- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    padding: var(--padding-base);
+}
+
+/* ------------------------
+   TYPOGRAPHY
+------------------------- */
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--text-color); }
+.text-heading { 
+    color: var(--heading-color); 
+    font-size: var(--font-size-heading); 
+    font-weight: bold; 
+    margin-bottom: var(--margin-base);
+}
+.text-base { font-size: var(--font-size-base); }
+
+/* ------------------------
+   SPACING UTILITIES
+------------------------- */
+.p-base { padding: var(--padding-base); }
+.m-base { margin: var(--margin-base); }
+.mt-base { margin-top: var(--margin-base); }
+.mb-base { margin-bottom: var(--margin-base); }
+.gap-section { margin-bottom: var(--section-gap); }
+
+/* ------------------------
+   LAYOUT / FLEX
+------------------------- */
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-row { display: flex; flex-direction: row; }
+.flex-center { justify-content: center; align-items: center; }
+
+/* ------------------------
+   CARDS / SECTIONS
+------------------------- */
+.section {
+    margin-bottom: var(--section-gap);
+    padding: var(--padding-base);
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    border: var(--border-width) solid var(--border-color);
+}
+
+.section-title {
+    font-size: var(--font-size-large);
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: calc(var(--padding-base) / 2);
+}
+
+.card {
+    background-color: #fff;
+    padding: var(--padding-base);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--margin-base);
+}
+
+/* ------------------------
+   IMAGES / AVATAR
+------------------------- */
+.avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: var(--border-width) solid var(--border-color);
+    margin-bottom: var(--margin-base);
+}
+
+/* ------------------------
+   BUTTONS / LINKS
+------------------------- */
+.button {
+    padding: 8px 16px;
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-decoration: none;
+}
+
+.button:hover {
+    background-color: #155ab6; /* Slightly darker */
+}
+
+a { text-decoration: none; color: var(--primary-color); }
+a:hover { text-decoration: underline; }
