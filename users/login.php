@@ -3,64 +3,64 @@ session_start();
 require_once '../includes/db_connect.php';
 require_once '../includes/functions.php';
 
-$error = [
-    'username' => '',
-    'password' => ''
-];
+$error = '';
 
-$username = ''; // initialize for HTML value
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username_check = validate_username($_POST['username']);
-    $password_check = validate_password($_POST['password']);
+    // Validate input
+    $valid_username = validate_username($username);
+    $valid_password = validate_password($password);
 
-    if ($username_check !== true) {
-        $error['username'] = $username_check;
-    } else {
-        $username = htmlspecialchars(trim($_POST['username']), ENT_QUOTES, 'UTF-8');
-    }
-
-    if ($password_check !== true) {
-        $error['password'] = $password_check;
-    } else {
-        $password = $_POST['password']; // use for password_verify
-    }
-
-    if (empty($error['username']) && empty($error['password'])) {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
+    if ($valid_username === true && $valid_password === true) {
+        // Fetch user
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username LIMIT 1");
         $stmt->execute(['username' => $username]);
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
-            session_regenerate_id(true);
-            $_SESSION['admin_id'] = $user['id'];
+            // Correct login
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+
             header("Location: ../admin/dashboard.php");
             exit;
         } else {
-            $error['password'] = 'Invalid username or password';
+            $error = "Invalid username or password.";
         }
+    } else {
+        // Show first validation error
+        $error = $valid_username !== true ? $valid_username : $valid_password;
     }
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Admin Login</title>
+    <title>Login</title>
 </head>
 <body>
-    <?php if(isset($_GET['registered'])): ?>
-        <p style='color:green;'>Registration successful! Please login.</p>
-    <?php endif ?>
-    <form action="" method="POST">
-        <input type="text" name="username" placeholder="Username" required value="<?= isset($username) ? $username : '' ?>">
-        <br><?= $error['username'] ?><br>
 
-        <input type="password" name="password" placeholder="Password" required>
-        <br><?= $error['password'] ?><br>
+<h2>Login</h2>
 
-        <button type="submit">Login</button>
-    </form>
+<?php if ($error): ?>
+    <p style="color:red;"><?= htmlspecialchars($error) ?></p>
+<?php endif; ?>
+
+<form method="POST" action="">
+    <label>Username:</label><br>
+    <input type="text" name="username" required><br><br>
+
+    <label>Password:</label><br>
+    <input type="password" name="password" required><br><br>
+
+    <button type="submit">Login</button>
+</form>
+
+<p><a href="register.php">Create an Account</a></p>
+
 </body>
 </html>

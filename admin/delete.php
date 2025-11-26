@@ -1,31 +1,29 @@
 <?php
 session_start();
 require_once '../includes/db_connect.php';
+require_once '../includes/functions.php';
 
-if(!isset($_SESSION['admin_id'])){
-    header("Location: ../users/login.php");
-    exit;
+// Check login
+if (!isset($_SESSION['user_id'])) {
+    die("You must <a href='../users/login.php'>login</a> first.");
 }
 
-// Get parameters
-$type = $_GET['type'] ?? '';
-$id   = intval($_GET['id'] ?? 0);
+// Validate table and ID
+$allowed_tables = ['experience', 'education', 'skills', 'projects', 'resume']; // add more if needed
 
-if(!$type || !$id){
-    header("Location: dashboard.php");
-    exit;
+$table = $_GET['table'] ?? '';
+$id = $_GET['id'] ?? '';
+
+if (!in_array($table, $allowed_tables) || !is_numeric($id)) {
+    die("Invalid request.");
 }
 
-// Determine table based on type
-$valid_types = ['experience', 'education', 'skills', 'projects'];
-if(!in_array($type, $valid_types)){
-    header("Location: dashboard.php");
-    exit;
-}
+$id = intval($id);
 
-// Delete the entry
-$stmt = $pdo->prepare("DELETE FROM {$type} WHERE id = :id");
-$stmt->execute(['id' => $id]);
+// Delete record
+$stmt = $pdo->prepare("DELETE FROM $table WHERE id=?");
+$stmt->execute([$id]);
 
-header("Location: dashboard.php?deleted=1");
+// Redirect back
+header("Location: dashboard.php");
 exit;

@@ -2,13 +2,13 @@
 require_once 'includes/db_connect.php';
 require_once 'includes/functions.php';
 
-// Fetch resume
+// Fetch resume (single row)
 $resume_stmt = $pdo->query("SELECT * FROM resume LIMIT 1");
-$resumes = $resume_stmt ? $resume_stmt->fetchAll() : [];
+$resumes = $resume_stmt ? $resume_stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 $resume = !empty($resumes) ? $resumes[0] : [
     'full_name'   => 'Your Name',
     'title'       => 'Your Title',
-    'about'       => 'About me section is empty.',
+    'about'       => '',
     'email'       => '',
     'phone'       => '',
     'location'    => '',
@@ -17,109 +17,125 @@ $resume = !empty($resumes) ? $resumes[0] : [
     'avatar_path' => ''
 ];
 
-// Fetch experiences
+// Experience
 $exp_stmt = $pdo->query("SELECT * FROM experience ORDER BY start_year DESC");
-$experiences = $exp_stmt ? $exp_stmt->fetchAll() : [];
+$experiences = $exp_stmt ? $exp_stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
-// Fetch education
+// Education
 $edu_stmt = $pdo->query("SELECT * FROM education ORDER BY start_year DESC");
-$educations = $edu_stmt ? $edu_stmt->fetchAll() : [];
+$educations = $edu_stmt ? $edu_stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
-// Fetch skills
+// Skills
 $skills_stmt = $pdo->query("SELECT * FROM skills");
-$skills = $skills_stmt ? $skills_stmt->fetchAll() : [];
+$skills = $skills_stmt ? $skills_stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
-// Fetch projects
+// Projects
 $proj_stmt = $pdo->query("SELECT * FROM projects ORDER BY start_year DESC");
-$projects = $proj_stmt ? $proj_stmt->fetchAll() : [];
+$projects = $proj_stmt ? $proj_stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <title><?= sanitize_input($resume['full_name']) ?> - Resume</title>
-    <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="p-base">
+<body>
 
-    <!-- Header / Resume Info -->
-    <header class="section flex-col flex-center">
-        <?php if(!empty($resume['avatar_path'])): ?>
-            <img src="<?= sanitize_input($resume['avatar_path']) ?>" alt="Profile Picture" class="avatar">
-        <?php endif; ?>
-        <h1 class="text-heading"><?= sanitize_input($resume['full_name']) ?></h1>
-        <h2 class="text-primary mb-base"><?= sanitize_input($resume['title']) ?></h2>
-        <p class="mb-base"><?= nl2br(sanitize_input($resume['about'])) ?></p>
-        <p>Email: <?= sanitize_input($resume['email']) ?></p>
-        <p>Phone: <?= sanitize_input($resume['phone']) ?></p>
-        <p>Location: <?= sanitize_input($resume['location']) ?></p>
-        <p>LinkedIn: <a href="<?= sanitize_input($resume['linkedin']) ?>"><?= sanitize_input($resume['linkedin']) ?></a></p>
-        <p>GitHub: <a href="<?= sanitize_input($resume['github']) ?>"><?= sanitize_input($resume['github']) ?></a></p>
-    </header>
+<h1><?= sanitize_input($resume['full_name']) ?></h1>
+<h2><?= sanitize_input($resume['title']) ?></h2>
 
-    <!-- Experience Section -->
-    <section class="section gap-section">
-        <h3 class="section-title">Experience</h3>
-        <?php if(!empty($experiences)): ?>
-            <?php foreach($experiences as $exp): ?>
-                <div class="card">
-                    <strong><?= sanitize_input($exp['job_title']) ?></strong> at <?= sanitize_input($exp['company_name']) ?>
-                    (<?= sanitize_input($exp['start_year']) ?> - <?= sanitize_input($exp['end_year'] ?: 'Present') ?>)
-                    <p><?= nl2br(sanitize_input($exp['description'])) ?></p>
-                </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p class="text-secondary">No experience added yet. Please check back later.</p>
-        <?php endif; ?>
-    </section>
+<?php if (!empty($resume['avatar_path'])): ?>
+    <img src="<?= sanitize_input($resume['avatar_path']) ?>" alt="Profile Picture" width="120">
+<?php endif; ?>
 
-    <!-- Education Section -->
-    <section class="section gap-section">
-        <h3 class="section-title">Education</h3>
-        <?php if(!empty($educations)): ?>
-            <?php foreach($educations as $edu): ?>
-                <div class="card">
-                    <strong><?= sanitize_input($edu['degree']) ?></strong> at <?= sanitize_input($edu['school']) ?>
-                    (<?= sanitize_input($edu['start_year']) ?> - <?= sanitize_input($edu['end_year'] ?: 'Present') ?>)
-                    <p><?= nl2br(sanitize_input($edu['description'])) ?></p>
-                </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p class="text-secondary">No education added yet. Please check back later.</p>
-        <?php endif; ?>
-    </section>
+<p><?= nl2br(sanitize_input($resume['about'])) ?></p>
 
-    <!-- Skills Section -->
-    <section class="section gap-section">
-        <h3 class="section-title">Skills</h3>
-        <?php if(!empty($skills)): ?>
-            <ul>
-                <?php foreach($skills as $skill): ?>
-                    <li><?= sanitize_input($skill['skill_name']) ?></li>
-                <?php endforeach; ?>
-            </ul>
-        <?php else: ?>
-            <p class="text-secondary">No skills added yet. Please check back later.</p>
-        <?php endif; ?>
-    </section>
+<p>Email: <?= sanitize_input($resume['email']) ?></p>
+<p>Phone: <?= sanitize_input($resume['phone']) ?></p>
+<p>Location: <?= sanitize_input($resume['location']) ?></p>
 
-    <!-- Projects Section -->
-    <section class="section gap-section">
-        <h3 class="section-title">Projects</h3>
-        <?php if(!empty($projects)): ?>
-            <?php foreach($projects as $proj): ?>
-                <div class="card">
-                    <strong><?= sanitize_input($proj['title']) ?></strong>
-                    (<?= sanitize_input($proj['start_year']) ?> - <?= sanitize_input($proj['end_year'] ?: 'Present') ?>)
-                    <p><?= nl2br(sanitize_input($proj['description'])) ?></p>
-                    <p>Link: <a href="<?= sanitize_input($proj['link']) ?>"><?= sanitize_input($proj['link']) ?></a></p>
-                </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p class="text-secondary">No projects added yet. Please check back later.</p>
-        <?php endif; ?>
-    </section>
+<p>
+    LinkedIn:
+    <a href="<?= sanitize_input($resume['linkedin']) ?>">
+        <?= sanitize_input($resume['linkedin']) ?>
+    </a>
+</p>
+
+<p>
+    GitHub:
+    <a href="<?= sanitize_input($resume['github']) ?>">
+        <?= sanitize_input($resume['github']) ?>
+    </a>
+</p>
+
+<hr>
+
+<h3>Experience</h3>
+<?php if (!empty($experiences)): ?>
+    <?php foreach ($experiences as $exp): ?>
+        <p>
+            <strong><?= sanitize_input($exp['position']) ?></strong>
+            at <?= sanitize_input($exp['company']) ?>
+            (<?= sanitize_input($exp['start_year']) ?> - <?= sanitize_input($exp['end_year'] ?: 'Present') ?>)
+        </p>
+        <p><?= nl2br(sanitize_input($exp['description'])) ?></p>
+        <br>
+    <?php endforeach; ?>
+<?php else: ?>
+    <p>No experience added yet.</p>
+<?php endif; ?>
+
+<hr>
+
+<h3>Education</h3>
+<?php if (!empty($educations)): ?>
+    <?php foreach ($educations as $edu): ?>
+        <p>
+            <strong><?= sanitize_input($edu['degree']) ?></strong>
+            at <?= sanitize_input($edu['school']) ?>
+            (<?= sanitize_input($edu['start_year']) ?> - <?= sanitize_input($edu['end_year'] ?: 'Present') ?>)
+        </p>
+        <p><?= nl2br(sanitize_input($edu['description'])) ?></p>
+        <br>
+    <?php endforeach; ?>
+<?php else: ?>
+    <p>No education added yet.</p>
+<?php endif; ?>
+
+<hr>
+
+<h3>Skills</h3>
+<?php if (!empty($skills)): ?>
+    <ul>
+        <?php foreach ($skills as $skill): ?>
+            <li><?= sanitize_input($skill['skill_name']) ?></li>
+        <?php endforeach; ?>
+    </ul>
+<?php else: ?>
+    <p>No skills added yet.</p>
+<?php endif; ?>
+
+<hr>
+
+<h3>Projects</h3>
+<?php if (!empty($projects)): ?>
+    <?php foreach ($projects as $proj): ?>
+        <p>
+            <strong><?= sanitize_input($proj['title']) ?></strong>
+            (<?= sanitize_input($proj['start_year']) ?> - <?= sanitize_input($proj['end_year'] ?: 'Present') ?>)
+        </p>
+        <p><?= nl2br(sanitize_input($proj['description'])) ?></p>
+        <p>
+            Link:
+            <a href="<?= sanitize_input($proj['link']) ?>">
+                <?= sanitize_input($proj['link']) ?>
+            </a>
+        </p>
+        <br>
+    <?php endforeach; ?>
+<?php else: ?>
+    <p>No projects added yet.</p>
+<?php endif; ?>
 
 </body>
 </html>

@@ -3,161 +3,183 @@ session_start();
 require_once '../includes/db_connect.php';
 require_once '../includes/functions.php';
 
-if(!isset($_SESSION['admin_id'])){
-    header("Location: ../users/login.php");
+if (!isset($_SESSION['user_id'])) {
+    echo "<p>You must <a href='../users/login.php'>login</a> first.</p>";
     exit;
 }
 
-// Success message for deletion
-$deleted = isset($_GET['deleted']) ? "Entry deleted successfully." : "";
-
-// Fetch all entries
-$experience = $pdo->query("SELECT * FROM experience ORDER BY start_year DESC")->fetchAll();
-$education  = $pdo->query("SELECT * FROM education ORDER BY start_year DESC")->fetchAll();
-$skills     = $pdo->query("SELECT * FROM skills ORDER BY skill_name ASC")->fetchAll();
-$projects   = $pdo->query("SELECT * FROM projects ORDER BY title ASC")->fetchAll();
+// Fetch tables
+$resume = $pdo->query("SELECT * FROM resume LIMIT 1")->fetch();
+$experiences = $pdo->query("SELECT * FROM experience ORDER BY start_year DESC")->fetchAll();
+$educations = $pdo->query("SELECT * FROM education ORDER BY start_year DESC")->fetchAll();
+$skills = $pdo->query("SELECT * FROM skills")->fetchAll();
+$projects = $pdo->query("SELECT * FROM projects ORDER BY start_year DESC")->fetchAll();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Admin Dashboard</title>
-<link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
 </head>
-<body class="p-base">
+<body>
 
-<h1 class="text-heading">Admin Dashboard</h1>
+<h2>Dashboard</h2>
 
-<?php if($deleted): ?>
-    <div class="card text-primary"><?= $deleted ?></div>
+<p>Welcome, <?= sanitize_input($_SESSION['username']) ?>!</p>
+<hr>
+
+<!-- Resume Section -->
+<h3>Resume</h3>
+<?php if ($resume): ?>
+    <p><strong>Name:</strong> <?= sanitize_input($resume['full_name']) ?></p>
+    <p><strong>Title:</strong> <?= sanitize_input($resume['title']) ?></p>
+    <p><strong>Email:</strong> <?= sanitize_input($resume['email']) ?></p>
+    <p><strong>Phone:</strong> <?= sanitize_input($resume['phone']) ?></p>
+    <p><strong>Location:</strong> <?= sanitize_input($resume['location']) ?></p>
+    <p><strong>About:</strong> <?= nl2br(sanitize_input($resume['about'])) ?></p>
+    <p>
+        <a href="edit_profile.php?id=<?= $resume['id'] ?>">Edit Resume</a>
+    </p>
+<?php else: ?>
+    <p>No resume found.</p>
+    <p><a href="edit_profile.php">Create Resume</a></p>
 <?php endif; ?>
+<hr>
 
-<!-- EXPERIENCE SECTION -->
-<div class="section">
-    <h2 class="section-title">Experience</h2>
-    <a href="add.php?type=experience" class="button mb-base">Add New Experience</a>
-    <?php if($experience): ?>
-        <table>
-            <tr>
-                <th>Job Title</th>
-                <th>Company</th>
-                <th>Years</th>
-                <th>Description</th>
-                <th>Actions</th>
-            </tr>
-            <?php foreach($experience as $exp): ?>
-            <tr>
-                <td><?= htmlspecialchars($exp['job_title']) ?></td>
-                <td><?= htmlspecialchars($exp['company_name']) ?></td>
-                <td><?= htmlspecialchars($exp['start_year']) ?> - <?= htmlspecialchars($exp['end_year'] ?? 'Present') ?></td>
-                <td><?= htmlspecialchars($exp['description']) ?></td>
-                <td>
-                    <a href="edit.php?type=experience&id=<?= $exp['id'] ?>" class="button">Edit</a>
-                    <a href="delete.php?type=experience&id=<?= $exp['id'] ?>" onclick="return confirm('Are you sure you want to delete this experience?');" class="button">Delete</a>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-        </table>
-    <?php else: ?>
-        <p>No experience entries yet.</p>
-    <?php endif; ?>
-</div>
 
-<!-- EDUCATION SECTION -->
-<div class="section">
-    <h2 class="section-title">Education</h2>
-    <a href="add.php?type=education" class="button mb-base">Add New Education</a>
-    <?php if($education): ?>
-        <table>
-            <tr>
-                <th>Degree</th>
-                <th>Institution</th>
-                <th>Years</th>
-                <th>Description</th>
-                <th>Actions</th>
-            </tr>
-            <?php foreach($education as $edu): ?>
-            <tr>
-                <td><?= htmlspecialchars($edu['degree']) ?></td>
-                <td><?= htmlspecialchars($edu['institution']) ?></td>
-                <td><?= htmlspecialchars($edu['start_year']) ?> - <?= htmlspecialchars($edu['end_year'] ?? 'Present') ?></td>
-                <td><?= htmlspecialchars($edu['description']) ?></td>
-                <td>
-                    <a href="edit.php?type=education&id=<?= $edu['id'] ?>" class="button">Edit</a>
-                    <a href="delete.php?type=education&id=<?= $edu['id'] ?>" onclick="return confirm('Are you sure you want to delete this education?');" class="button">Delete</a>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-        </table>
-    <?php else: ?>
-        <p>No education entries yet.</p>
-    <?php endif; ?>
-</div>
+<!-- Experience Section -->
+<h3>Experience</h3>
+<?php if ($experiences): ?>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Company</th>
+        <th>Position</th>
+        <th>Years</th>
+        <th>Location</th>
+        <th>Description</th>
+        <th>Actions</th>
+    </tr>
+    <?php foreach ($experiences as $exp): ?>
+    <tr>
+        <td><?= sanitize_input($exp['company']) ?></td>
+        <td><?= sanitize_input($exp['position']) ?></td>
+        <td><?= sanitize_input($exp['start_year']) ?> - <?= sanitize_input($exp['end_year'] ?: 'Present') ?></td>
+        <td><?= sanitize_input($exp['location']) ?></td>
+        <td><?= nl2br(sanitize_input($exp['description'])) ?></td>
+        <td>
+            <a href="edit_experience.php?id=<?= $exp['id'] ?>">Edit</a> |
+            <a href="delete.php?table=experience&id=<?= $exp['id'] ?>">Delete</a>
 
-<!-- SKILLS SECTION -->
-<div class="section">
-    <h2 class="section-title">Skills</h2>
-    <a href="add.php?type=skills" class="button mb-base">Add New Skill</a>
-    <?php if($skills): ?>
-        <table>
-            <tr>
-                <th>Skill</th>
-                <th>Level</th>
-                <th>Actions</th>
-            </tr>
-            <?php foreach($skills as $skill): ?>
-            <tr>
-                <td><?= htmlspecialchars($skill['name']) ?></td>
-                <td><?= htmlspecialchars($skill['level']) ?></td>
-                <td>
-                    <a href="edit.php?type=skills&id=<?= $skill['id'] ?>" class="button">Edit</a>
-                    <a href="delete.php?type=skills&id=<?= $skill['id'] ?>" onclick="return confirm('Are you sure you want to delete this skill?');" class="button">Delete</a>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-        </table>
-    <?php else: ?>
-        <p>No skills added yet.</p>
-    <?php endif; ?>
-</div>
+        </td>
+    </tr>
+    <?php endforeach; ?>
+</table>
+<?php else: ?>
+<p>No experience added.</p>
+<?php endif; ?>
+<p><a href="add_experience.php">Add Experience</a></p>
+<hr>
 
-<!-- PROJECTS SECTION -->
-<div class="section">
-    <h2 class="section-title">Projects</h2>
-    <a href="add.php?type=projects" class="button mb-base">Add New Project</a>
-    <?php if($projects): ?>
-        <table>
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Link</th>
-                <th>Actions</th>
-            </tr>
-            <?php foreach($projects as $proj): ?>
-            <tr>
-                <td><?= htmlspecialchars($proj['title']) ?></td>
-                <td><?= htmlspecialchars($proj['description']) ?></td>
-                <td>
-                    <?php if($proj['link']): ?>
-                        <a href="<?= htmlspecialchars($proj['link']) ?>" target="_blank">View</a>
-                    <?php else: ?>
-                        N/A
-                    <?php endif; ?>
-                </td>
-                <td>
-                    <a href="edit.php?type=projects&id=<?= $proj['id'] ?>" class="button">Edit</a>
-                    <a href="delete.php?type=projects&id=<?= $proj['id'] ?>" onclick="return confirm('Are you sure you want to delete this project?');" class="button">Delete</a>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-        </table>
-    <?php else: ?>
-        <p>No projects added yet.</p>
-    <?php endif; ?>
-</div>
+<!-- Education Section -->
+<h3>Education</h3>
+<?php if ($educations): ?>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>School</th>
+        <th>Degree</th>
+        <th>Years</th>
+        <th>Location</th>
+        <th>Description</th>
+        <th>Actions</th>
+    </tr>
+    <?php foreach ($educations as $edu): ?>
+    <tr>
+        <td><?= sanitize_input($edu['school']) ?></td>
+        <td><?= sanitize_input($edu['degree']) ?></td>
+        <td><?= sanitize_input($edu['start_year']) ?> - <?= sanitize_input($edu['end_year'] ?: 'Present') ?></td>
+        <td><?= sanitize_input($edu['location']) ?></td>
+        <td><?= nl2br(sanitize_input($edu['description'])) ?></td>
+        <td>
+            <a href="edit_education.php?id=<?= $edu['id'] ?>">Edit</a> |
+            <a href="delete.php?table=education&id=<?= $edu['id'] ?>">Delete</a>
 
-<a href="logout.php" class="button mt-base">Logout</a>
+        </td>
+    </tr>
+    <?php endforeach; ?>
+</table>
+<?php else: ?>
+<p>No education added.</p>
+<?php endif; ?>
+<p><a href="add_education.php">Add Education</a></p>
+<hr>
+
+<!-- Skills Section -->
+<h3>Skills</h3>
+<?php if ($skills): ?>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Skill</th>
+        <th>Level</th>
+        <th>Category</th>
+        
+        <th>Actions</th>
+    </tr>
+    <?php foreach ($skills as $skill): ?>
+    <tr>
+        <td><?= sanitize_input($skill['skill_name']) ?></td>
+        <td><?= sanitize_input($skill['level']) ?></td>
+        <td><?= sanitize_input($skill['category']) ?></td>
+        
+        <td>
+            <a href="edit_skills.php?id=<?= $skill['id'] ?>">Edit</a> |
+            <a href="delete.php?table=skills&id=<?= $skill['id'] ?>">Delete</a>
+
+        </td>
+    </tr>
+    <?php endforeach; ?>
+</table>
+<?php else: ?>
+<p>No skills added.</p>
+<?php endif; ?>
+<p><a href="add_skills.php">Add Skill</a></p>
+<hr>
+
+<!-- Projects Section -->
+<h3>Projects</h3>
+<?php if ($projects): ?>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Link</th>
+        <th>Start Year</th>
+        <th>End Year</th>
+        <th>Actions</th>
+    </tr>
+    <?php foreach ($projects as $proj): ?>
+    <tr>
+        <td><?= sanitize_input($proj['title']) ?></td>
+        <td><?= nl2br(sanitize_input($proj['description'])) ?></td>
+        <td><a href="<?= sanitize_input($proj['link']) ?>"><?= sanitize_input($proj['link']) ?></a></td>
+        <td><?= sanitize_input($proj['start_year']) ?></td>
+        <td><?= sanitize_input($proj['end_year'] ?: 'Present') ?></td>
+        <td>
+            <a href="edit_projects.php?id=<?= $proj['id'] ?>">Edit</a> |
+            <a href="delete.php?table=projects&id=<?= $proj['id'] ?>">Delete</a>
+
+        </td>
+    </tr>
+    <?php endforeach; ?>
+</table>
+<?php else: ?>
+<p>No projects added.</p>
+<?php endif; ?>
+<p><a href="add_projects.php">Add Project</a></p>
+<hr>
+
+
+<p><a href="../users/logout.php">Logout</a></p>
 
 </body>
 </html>
