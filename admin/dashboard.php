@@ -157,7 +157,8 @@ $projects = $pdo->query("SELECT * FROM projects ORDER BY start_year DESC")->fetc
     <div class="dashboard-card">
         <h3>Projects</h3>
         <?php if ($projects): ?>
-            <table>
+            <div class="table-responsive">
+                <table>
                 <tr>
                     <th>Title</th>
                     <th>Description</th>
@@ -183,6 +184,7 @@ $projects = $pdo->query("SELECT * FROM projects ORDER BY start_year DESC")->fetc
                 </tr>
                 <?php endforeach; ?>
             </table>
+            </div>
         <?php else: ?>
             <p>No projects added.</p>
         <?php endif; ?>
