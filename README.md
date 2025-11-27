@@ -96,8 +96,8 @@ dynamic-resume/
 ### **1. Clone Repository**
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/dynamic-resume.git
-cd dynamic-resume
+[git clone https://github.com/YOUR_USERNAME/dynamic-resume.git
+cd dynamic-resume](https://github.com/Nurbekprodev/dynamic-resume.git)
 ```
 
 ### **2. Set Up Database**
