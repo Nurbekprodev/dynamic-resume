@@ -1,6 +1,7 @@
 <?php
 require_once 'includes/db_connect.php';
 require_once 'includes/functions.php';
+require_once 'includes/header.php';
 
 // Fetch resume (single row)
 $resume_stmt = $pdo->query("SELECT * FROM resume LIMIT 1");
@@ -24,7 +25,7 @@ $skills      = $pdo->query("SELECT * FROM skills")->fetchAll(PDO::FETCH_ASSOC);
 $projects    = $pdo->query("SELECT * FROM projects ORDER BY start_year DESC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<?= require_once 'includes/header.php' ?>
+
 
 <div class="dashboard-container container"> <!-- consistent spacing -->
 
@@ -114,4 +115,4 @@ $projects    = $pdo->query("SELECT * FROM projects ORDER BY start_year DESC")->f
 
 </div> <!-- end dashboard-container -->
 
-<?= require_once 'includes/footer.php' ?>
+<?php require_once 'includes/footer.php'; ?>

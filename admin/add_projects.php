@@ -4,47 +4,70 @@ require_once '../includes/db_connect.php';
 require_once '../includes/functions.php';
 
 if (!isset($_SESSION['user_id'])) {
-    die("You must <a href='../users/login.php'>login</a> first.");
+    header("Location: ../users/login.php");
+    exit;
 }
 
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = sanitize_input($_POST['title'] ?? '');
+    $title       = sanitize_input($_POST['title'] ?? '');
     $description = sanitize_input($_POST['description'] ?? '');
-    $link = sanitize_input($_POST['link'] ?? '');
-    $start_year = intval($_POST['start_year'] ?? 0);
-    $end_year = intval($_POST['end_year'] ?? 0);
+    $link        = sanitize_input($_POST['link'] ?? '');
+    $start_year  = intval($_POST['start_year'] ?? 0);
+    $end_year    = intval($_POST['end_year'] ?? 0);
 
     if ($title === '') $errors[] = "Project title is required.";
 
     if (empty($errors)) {
-        $stmt = $pdo->prepare("INSERT INTO projects (title, description, link, start_year, end_year) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("
+            INSERT INTO projects (title, description, link, start_year, end_year)
+            VALUES (?, ?, ?, ?, ?)
+        ");
         $stmt->execute([$title, $description, $link, $start_year ?: null, $end_year ?: null]);
-        echo "<p>Project added successfully. <a href='dashboard.php'>Back to Dashboard</a></p>";
+        
+        header("Location: dashboard.php?success=project_added");
         exit;
     }
 }
+
+include '../includes/header.php';
 ?>
 
-<h2>Add Project</h2>
+<div class="page-container">
 
-<?php if (!empty($errors)) foreach ($errors as $err) echo "<p style='color:red;'>$err</p>"; ?>
+    <div class="page-header">
+        <h2>Add Project</h2>
+        <a class="btn-back" href="dashboard.php">← Back to Dashboard</a>
+    </div>
 
-<form method="POST">
-    <label>Title:</label><br>
-    <input type="text" name="title" required><br><br>
+    <?php if (!empty($errors)): ?>
+        <div class="error-box">
+            <?php foreach ($errors as $err): ?>
+                <p><?= $err ?></p>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 
-    <label>Description:</label><br>
-    <textarea name="description"></textarea><br><br>
+    <form method="POST" class="form-box">
 
-    <label>Link:</label><br>
-    <input type="url" name="link"><br><br>
+        <label>Title:</label>
+        <input type="text" name="title" required>
 
-    <label>Start Year:</label><br>
-    <input type="number" name="start_year"><br><br>
+        <label>Description:</label>
+        <textarea name="description"></textarea>
 
-    <label>End Year:</label><br>
-    <input type="number" name="end_year"><br><br>
+        <label>Link:</label>
+        <input type="url" name="link">
 
-    <button type="submit">Add Project</button>
-</form>
+        <label>Start Year:</label>
+        <input type="number" name="start_year">
+
+        <label>End Year:</label>
+        <input type="number" name="end_year">
+
+        <button type="submit" class="btn-primary">Add Project</button>
+    </form>
+
+</div>
+
+<?php include '../includes/footer.php'; ?>

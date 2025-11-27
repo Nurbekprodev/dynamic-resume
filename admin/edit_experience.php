@@ -16,53 +16,73 @@ $stmt->execute([$id]);
 $exp = $stmt->fetch();
 if (!$exp) die("Experience not found.");
 
+$errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $company = trim($_POST['company']);
-    $position = trim($_POST['position']);
-    $start_year = intval($_POST['start_year']);
-    $end_year = $_POST['end_year'] ? intval($_POST['end_year']) : null;
-    $location = trim($_POST['location']);
+    $company     = trim($_POST['company']);
+    $position    = trim($_POST['position']);
+    $start_year  = intval($_POST['start_year']);
+    $end_year    = $_POST['end_year'] ? intval($_POST['end_year']) : null;
+    $location    = trim($_POST['location']);
     $description = trim($_POST['description']);
 
-    $update = $pdo->prepare("UPDATE experience SET company=?, position=?, start_year=?, end_year=?, location=?, description=? WHERE id=?");
-    $update->execute([$company, $position, $start_year, $end_year, $location, $description, $id]);
+    if ($company === '') $errors[] = "Company name is required.";
+    if ($position === '') $errors[] = "Position is required.";
+    if ($start_year <= 0) $errors[] = "Start year is required.";
 
-    echo "<p>Updated successfully. <a href='dashboard.php'>Back to Dashboard</a></p>";
-    exit;
+    if (empty($errors)) {
+        $update = $pdo->prepare("
+            UPDATE experience 
+            SET company=?, position=?, start_year=?, end_year=?, location=?, description=? 
+            WHERE id=?
+        ");
+        $update->execute([$company, $position, $start_year, $end_year, $location, $description, $id]);
+
+        header("Location: dashboard.php?success=experience_updated");
+        exit;
+    }
 }
+
+include '../includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Experience</title>
-</head>
-<body>
-<h2>Edit Experience</h2>
+<div class="page-container">
 
-<form method="POST">
-    <label>Company:</label><br>
-    <input type="text" name="company" value="<?= sanitize_input($exp['company']) ?>" required><br><br>
+    <div class="page-header">
+        <h2>Edit Experience</h2>
+        <a class="btn-back" href="dashboard.php">← Back to Dashboard</a>
+    </div>
 
-    <label>Position:</label><br>
-    <input type="text" name="position" value="<?= sanitize_input($exp['position']) ?>" required><br><br>
+    <?php if (!empty($errors)): ?>
+        <div class="error-box">
+            <?php foreach ($errors as $err): ?>
+                <p><?= $err ?></p>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 
-    <label>Start Year:</label><br>
-    <input type="number" name="start_year" value="<?= sanitize_input($exp['start_year']) ?>" required><br><br>
+    <form method="POST" class="form-box">
 
-    <label>End Year:</label><br>
-    <input type="number" name="end_year" value="<?= sanitize_input($exp['end_year']) ?>"><br><br>
+        <label>Company:</label>
+        <input type="text" name="company" value="<?= sanitize_input($exp['company']) ?>" required>
 
-    <label>Location:</label><br>
-    <input type="text" name="location" value="<?= sanitize_input($exp['location']) ?>"><br><br>
+        <label>Position:</label>
+        <input type="text" name="position" value="<?= sanitize_input($exp['position']) ?>" required>
 
-    <label>Description:</label><br>
-    <textarea name="description"><?= sanitize_input($exp['description']) ?></textarea><br><br>
+        <label>Start Year:</label>
+        <input type="number" name="start_year" value="<?= sanitize_input($exp['start_year']) ?>" required>
 
-    <button type="submit">Update</button>
-</form>
+        <label>End Year:</label>
+        <input type="number" name="end_year" value="<?= sanitize_input($exp['end_year']) ?>">
 
-<p><a href="dashboard.php">Cancel</a></p>
-</body>
-</html>
+        <label>Location:</label>
+        <input type="text" name="location" value="<?= sanitize_input($exp['location']) ?>">
+
+        <label>Description:</label>
+        <textarea name="description"><?= sanitize_input($exp['description']) ?></textarea>
+
+        <button type="submit" class="btn-primary">Update Experience</button>
+    </form>
+
+</div>
+
+<?php include '../includes/footer.php'; ?>

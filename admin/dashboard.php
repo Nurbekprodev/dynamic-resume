@@ -2,6 +2,7 @@
 session_start();
 require_once '../includes/db_connect.php';
 require_once '../includes/functions.php';
+require_once '../includes/header.php';
 
 if (!isset($_SESSION['user_id'])) {
     echo "<p>You must <a href='../users/login.php'>login</a> first.</p>";
@@ -15,7 +16,6 @@ $educations = $pdo->query("SELECT * FROM education ORDER BY start_year DESC")->f
 $skills = $pdo->query("SELECT * FROM skills")->fetchAll();
 $projects = $pdo->query("SELECT * FROM projects ORDER BY start_year DESC")->fetchAll();
 ?>
-<?= require_once '../includes/header.php' ?>
 
 <div class="dashboard-container ">
 
@@ -69,7 +69,7 @@ $projects = $pdo->query("SELECT * FROM projects ORDER BY start_year DESC")->fetc
                     <td><?= sanitize_input($exp['start_year']) ?> - <?= sanitize_input($exp['end_year'] ?: 'Present') ?></td>
                     <td><?= sanitize_input($exp['location']) ?></td>
                     <td><?= nl2br(sanitize_input($exp['description'])) ?></td>
-                   <td>
+                   <td class="actions">
                         <a href="edit_experience.php?id=<?= $exp['id'] ?>" class="btn-small edit-btn">Edit</a>
                         <a href="delete.php?table=experience&id=<?= $exp['id'] ?>" 
                         class="btn-small danger delete-btn"
@@ -105,7 +105,7 @@ $projects = $pdo->query("SELECT * FROM projects ORDER BY start_year DESC")->fetc
                     <td><?= sanitize_input($edu['start_year']) ?> - <?= sanitize_input($edu['end_year'] ?: 'Present') ?></td>
                     <td><?= sanitize_input($edu['location']) ?></td>
                     <td><?= nl2br(sanitize_input($edu['description'])) ?></td>
-                    <td>
+                    <td class="actions">
                         <a href="edit_education.php?id=<?= $edu['id'] ?>" class="btn-small edit-btn">Edit</a>
                         <a href="delete.php?table=education&id=<?= $edu['id'] ?>" 
                         class="btn-small danger delete-btn"
@@ -137,7 +137,7 @@ $projects = $pdo->query("SELECT * FROM projects ORDER BY start_year DESC")->fetc
                     <td><?= sanitize_input($skill['skill_name']) ?></td>
                     <td><?= sanitize_input($skill['level']) ?></td>
                     <td><?= sanitize_input($skill['category']) ?></td>
-                    <td>
+                    <td class="actions">
                         <a href="edit_skills.php?id=<?= $skill['id'] ?>" class="btn-small edit-btn">Edit</a>
                         <a href="delete.php?table=skills&id=<?= $skill['id'] ?>" 
                         class="btn-small danger delete-btn"
@@ -173,7 +173,7 @@ $projects = $pdo->query("SELECT * FROM projects ORDER BY start_year DESC")->fetc
                     <td><a href="<?= sanitize_input($proj['link']) ?>"><?= sanitize_input($proj['link']) ?></a></td>
                     <td><?= sanitize_input($proj['start_year']) ?></td>
                     <td><?= sanitize_input($proj['end_year'] ?: 'Present') ?></td>
-                    <td>
+                    <td class="actions">
                         <a href="edit_projects.php?id=<?= $proj['id'] ?>" class="btn-small edit-btn">Edit</a>
                         <a href="delete.php?table=projects&id=<?= $proj['id'] ?>" 
                         class="btn-small danger delete-btn"
@@ -193,4 +193,4 @@ $projects = $pdo->query("SELECT * FROM projects ORDER BY start_year DESC")->fetc
 
 </div>
 
-<?= require_once '../includes/footer.php' ?>
+<?php require_once '../includes/footer.php'; ?>

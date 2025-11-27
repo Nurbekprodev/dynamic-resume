@@ -52,4 +52,4 @@ function validate_name($name, $field_name = "Name") {
 function sanitize_input($input) {
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
 }
-?>
+

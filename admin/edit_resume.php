@@ -13,132 +13,132 @@ if (!isset($_SESSION['user_id'])) {
 $stmt = $pdo->query("SELECT * FROM resume LIMIT 1");
 $resume = $stmt->fetch();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $full_name = trim($_POST['full_name']);
-    $title     = trim($_POST['title']);
-    $about     = trim($_POST['about']);
-    $email     = trim($_POST['email']);
-    $phone     = trim($_POST['phone']);
-    $location  = trim($_POST['location']);
-    $linkedin  = trim($_POST['linkedin']);
-    $github    = trim($_POST['github']);
-    $avatar_path = $resume['avatar_path'] ?? null; // default to existing
+$errors = [];
+$message = '';
 
-    // Handle file upload
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $full_name   = trim($_POST['full_name']);
+    $title       = trim($_POST['title']);
+    $about       = trim($_POST['about']);
+    $email       = trim($_POST['email']);
+    $phone       = trim($_POST['phone']);
+    $location    = trim($_POST['location']);
+    $linkedin    = trim($_POST['linkedin']);
+    $github      = trim($_POST['github']);
+    $avatar_path = $resume['avatar_path'] ?? null;
+
+    if ($full_name === '') $errors[] = "Full Name is required.";
+
+    // Handle avatar upload
     if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === 0) {
         $file = $_FILES['avatar'];
-
-        // Validate type & size
         $allowedTypes = ['image/jpeg', 'image/png'];
-        if (!in_array($file['type'], $allowedTypes)) {
-            die("Only JPG and PNG images are allowed.");
-        }
-        if ($file['size'] > 2 * 1024 * 1024) {
-            die("File size must be less than 2MB.");
-        }
+        if (!in_array($file['type'], $allowedTypes)) $errors[] = "Only JPG and PNG images are allowed.";
+        if ($file['size'] > 2 * 1024 * 1024) $errors[] = "File size must be less than 2MB.";
 
-        // Upload directory
-        $uploadDir = '../uploads/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+        if (empty($errors)) {
+            $uploadDir = '../uploads/';
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $newName = 'avatar_' . uniqid() . '.' . $ext;
+            $uploadPath = $uploadDir . $newName;
 
-        // Unique filename
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $newName = 'avatar_' . uniqid() . '.' . $ext;
-        $uploadPath = $uploadDir . $newName;
-
-        // Move uploaded file
-        if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
-            die("Failed to upload file.");
+            if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
+                $errors[] = "Failed to upload file.";
+            } else {
+                $thumbPath = $uploadDir . 'thumb_' . $newName;
+                $img = ($ext === 'jpg' || $ext === 'jpeg') ? imagecreatefromjpeg($uploadPath) : imagecreatefrompng($uploadPath);
+                $thumb = imagescale($img, 150, 150);
+                ($ext === 'jpg' || $ext === 'jpeg') ? imagejpeg($thumb, $thumbPath) : imagepng($thumb, $thumbPath);
+                imagedestroy($img);
+                imagedestroy($thumb);
+                $avatar_path = $thumbPath;
+            }
         }
-
-        // Create thumbnail 150x150
-        $thumbPath = $uploadDir . 'thumb_' . $newName;
-        if ($ext === 'jpg' || $ext === 'jpeg') {
-            $img = imagecreatefromjpeg($uploadPath);
-        } else {
-            $img = imagecreatefrompng($uploadPath);
-        }
-        $thumb = imagescale($img, 150, 150);
-        if ($ext === 'jpg' || $ext === 'jpeg') {
-            imagejpeg($thumb, $thumbPath);
-        } else {
-            imagepng($thumb, $thumbPath);
-        }
-        imagedestroy($img);
-        imagedestroy($thumb);
-
-        // Use thumbnail path for DB
-        $avatar_path = $thumbPath;
     }
 
-    if ($resume) {
-        // Update existing resume
-        $update = $pdo->prepare("UPDATE resume SET full_name=?, title=?, about=?, email=?, phone=?, location=?, linkedin=?, github=?, avatar_path=? WHERE id=?");
-        $update->execute([
-            $full_name, $title, $about, $email, $phone,
-            $location, $linkedin, $github, $avatar_path,
-            $resume['id']
-        ]);
-        $message = "Resume updated successfully.";
-    } else {
-        // Insert new resume
-        $insert = $pdo->prepare("INSERT INTO resume (full_name, title, about, email, phone, location, linkedin, github, avatar_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $insert->execute([
-            $full_name, $title, $about, $email, $phone,
-            $location, $linkedin, $github, $avatar_path
-        ]);
-        $message = "Resume created successfully.";
+    if (empty($errors)) {
+        if ($resume) {
+            $update = $pdo->prepare("
+                UPDATE resume 
+                SET full_name=?, title=?, about=?, email=?, phone=?, location=?, linkedin=?, github=?, avatar_path=? 
+                WHERE id=?
+            ");
+            $update->execute([
+                $full_name, $title, $about, $email, $phone,
+                $location, $linkedin, $github, $avatar_path,
+                $resume['id']
+            ]);
+            $message = "Resume updated successfully.";
+        } else {
+            $insert = $pdo->prepare("
+                INSERT INTO resume (full_name, title, about, email, phone, location, linkedin, github, avatar_path) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $insert->execute([
+                $full_name, $title, $about, $email, $phone,
+                $location, $linkedin, $github, $avatar_path
+            ]);
+            $message = "Resume created successfully.";
+        }
+        header("Location: dashboard.php?success=resume_saved");
+        exit;
     }
-
-    echo "<p>$message <a href='dashboard.php'>Back to Dashboard</a></p>";
-    exit;
 }
+
+include '../includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title><?= $resume ? 'Edit' : 'Create' ?> Resume</title>
-</head>
-<body>
-<h2><?= $resume ? 'Edit' : 'Create' ?> Resume</h2>
+<div class="page-container">
 
-<form method="POST" enctype="multipart/form-data">
-    <label>Full Name:</label><br>
-    <input type="text" name="full_name" value="<?= sanitize_input($resume['full_name'] ?? '') ?>" required><br><br>
+    <div class="page-header">
+        <h2><?= $resume ? 'Edit' : 'Create' ?> Resume</h2>
+        <a class="btn-back" href="dashboard.php">← Back to Dashboard</a>
+    </div>
 
-    <label>Title:</label><br>
-    <input type="text" name="title" value="<?= sanitize_input($resume['title'] ?? '') ?>"><br><br>
-
-    <label>About:</label><br>
-    <textarea name="about"><?= sanitize_input($resume['about'] ?? '') ?></textarea><br><br>
-
-    <label>Email:</label><br>
-    <input type="text" name="email" value="<?= sanitize_input($resume['email'] ?? '') ?>"><br><br>
-
-    <label>Phone:</label><br>
-    <input type="text" name="phone" value="<?= sanitize_input($resume['phone'] ?? '') ?>"><br><br>
-
-    <label>Location:</label><br>
-    <input type="text" name="location" value="<?= sanitize_input($resume['location'] ?? '') ?>"><br><br>
-
-    <label>LinkedIn:</label><br>
-    <input type="text" name="linkedin" value="<?= sanitize_input($resume['linkedin'] ?? '') ?>"><br><br>
-
-    <label>GitHub:</label><br>
-    <input type="text" name="github" value="<?= sanitize_input($resume['github'] ?? '') ?>"><br><br>
-
-    <label>Profile Picture:</label><br>
-    <input type="file" name="avatar" accept="image/png, image/jpeg"><br>
-    <?php if (!empty($resume['avatar_path'])): ?>
-        <img src="<?= htmlspecialchars($resume['avatar_path']) ?>" alt="Avatar" style="margin-top:5px; width:80px; height:80px;">
+    <?php if (!empty($errors)): ?>
+        <div class="error-box">
+            <?php foreach ($errors as $err): ?>
+                <p><?= $err ?></p>
+            <?php endforeach; ?>
+        </div>
     <?php endif; ?>
-    <br><br>
 
-    <button type="submit"><?= $resume ? 'Update' : 'Create' ?></button>
-</form>
+    <form method="POST" enctype="multipart/form-data" class="form-box">
 
-<p><a href="dashboard.php">Cancel</a></p>
-</body>
-</html>
+        <label>Full Name:</label>
+        <input type="text" name="full_name" value="<?= sanitize_input($resume['full_name'] ?? '') ?>" required>
+
+        <label>Title:</label>
+        <input type="text" name="title" value="<?= sanitize_input($resume['title'] ?? '') ?>">
+
+        <label>About:</label>
+        <textarea name="about"><?= sanitize_input($resume['about'] ?? '') ?></textarea>
+
+        <label>Email:</label>
+        <input type="text" name="email" value="<?= sanitize_input($resume['email'] ?? '') ?>">
+
+        <label>Phone:</label>
+        <input type="text" name="phone" value="<?= sanitize_input($resume['phone'] ?? '') ?>">
+
+        <label>Location:</label>
+        <input type="text" name="location" value="<?= sanitize_input($resume['location'] ?? '') ?>">
+
+        <label>LinkedIn:</label>
+        <input type="text" name="linkedin" value="<?= sanitize_input($resume['linkedin'] ?? '') ?>">
+
+        <label>GitHub:</label>
+        <input type="text" name="github" value="<?= sanitize_input($resume['github'] ?? '') ?>">
+
+        <label>Profile Picture:</label>
+        <input type="file" name="avatar" accept="image/png, image/jpeg">
+        <?php if (!empty($resume['avatar_path'])): ?>
+            <img src="<?= htmlspecialchars($resume['avatar_path']) ?>" alt="Avatar" style="margin-top:5px; width:80px; height:80px;">
+        <?php endif; ?>
+
+        <button type="submit" class="btn-primary"><?= $resume ? 'Update' : 'Create' ?></button>
+    </form>
+
+</div>
+
+<?php include '../includes/footer.php'; ?>

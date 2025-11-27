@@ -16,49 +16,67 @@ $stmt->execute([$id]);
 $proj = $stmt->fetch();
 if (!$proj) die("Project not found.");
 
+$errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = trim($_POST['title']);
+    $title       = trim($_POST['title']);
     $description = trim($_POST['description']);
-    $link = trim($_POST['link']);
-    $start_year = $_POST['start_year'] ? intval($_POST['start_year']) : null;
-    $end_year = $_POST['end_year'] ? intval($_POST['end_year']) : null;
+    $link        = trim($_POST['link']);
+    $start_year  = $_POST['start_year'] ? intval($_POST['start_year']) : null;
+    $end_year    = $_POST['end_year'] ? intval($_POST['end_year']) : null;
 
-    $update = $pdo->prepare("UPDATE projects SET title=?, description=?, link=?, start_year=?, end_year=? WHERE id=?");
-    $update->execute([$title, $description, $link, $start_year, $end_year, $id]);
+    if ($title === '') $errors[] = "Project title is required.";
 
-    echo "<p>Updated successfully. <a href='dashboard.php'>Back to Dashboard</a></p>";
-    exit;
+    if (empty($errors)) {
+        $update = $pdo->prepare("
+            UPDATE projects 
+            SET title=?, description=?, link=?, start_year=?, end_year=? 
+            WHERE id=?
+        ");
+        $update->execute([$title, $description, $link, $start_year, $end_year, $id]);
+
+        header("Location: dashboard.php?success=project_updated");
+        exit;
+    }
 }
+
+include '../includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Project</title>
-</head>
-<body>
-<h2>Edit Project</h2>
+<div class="page-container">
 
-<form method="POST">
-    <label>Title:</label><br>
-    <input type="text" name="title" value="<?= sanitize_input($proj['title']) ?>" required><br><br>
+    <div class="page-header">
+        <h2>Edit Project</h2>
+        <a class="btn-back" href="dashboard.php">← Back to Dashboard</a>
+    </div>
 
-    <label>Description:</label><br>
-    <textarea name="description"><?= sanitize_input($proj['description']) ?></textarea><br><br>
+    <?php if (!empty($errors)): ?>
+        <div class="error-box">
+            <?php foreach ($errors as $err): ?>
+                <p><?= $err ?></p>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 
-    <label>Link:</label><br>
-    <input type="text" name="link" value="<?= sanitize_input($proj['link']) ?>"><br><br>
+    <form method="POST" class="form-box">
 
-    <label>Start Year:</label><br>
-    <input type="number" name="start_year" value="<?= sanitize_input($proj['start_year']) ?>"><br><br>
+        <label>Title:</label>
+        <input type="text" name="title" value="<?= sanitize_input($proj['title']) ?>" required>
 
-    <label>End Year:</label><br>
-    <input type="number" name="end_year" value="<?= sanitize_input($proj['end_year']) ?>"><br><br>
+        <label>Description:</label>
+        <textarea name="description"><?= sanitize_input($proj['description']) ?></textarea>
 
-    <button type="submit">Update</button>
-</form>
+        <label>Link:</label>
+        <input type="text" name="link" value="<?= sanitize_input($proj['link']) ?>">
 
-<p><a href="dashboard.php">Cancel</a></p>
-</body>
-</html>
+        <label>Start Year:</label>
+        <input type="number" name="start_year" value="<?= sanitize_input($proj['start_year']) ?>">
+
+        <label>End Year:</label>
+        <input type="number" name="end_year" value="<?= sanitize_input($proj['end_year']) ?>">
+
+        <button type="submit" class="btn-primary">Update Project</button>
+    </form>
+
+</div>
+
+<?php include '../includes/footer.php'; ?>

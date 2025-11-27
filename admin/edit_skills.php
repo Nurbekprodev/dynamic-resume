@@ -16,41 +16,54 @@ $stmt->execute([$id]);
 $skill = $stmt->fetch();
 if (!$skill) die("Skill not found.");
 
+$errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $skill_name = trim($_POST['skill_name']);
-    $level = trim($_POST['level']);
-    $category = trim($_POST['category']);
+    $level      = trim($_POST['level']);
+    $category   = trim($_POST['category']);
 
-    $update = $pdo->prepare("UPDATE skills SET skill_name=?, level=?, category=? WHERE id=?");
-    $update->execute([$skill_name, $level, $category, $id]);
+    if ($skill_name === '') $errors[] = "Skill name is required.";
 
-    echo "<p>Updated successfully. <a href='dashboard.php'>Back to Dashboard</a></p>";
-    exit;
+    if (empty($errors)) {
+        $update = $pdo->prepare("UPDATE skills SET skill_name=?, level=?, category=? WHERE id=?");
+        $update->execute([$skill_name, $level, $category, $id]);
+        header("Location: dashboard.php?success=skill_updated");
+        exit;
+    }
 }
+
+include '../includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Skill</title>
-</head>
-<body>
-<h2>Edit Skill</h2>
+<div class="page-container">
 
-<form method="POST">
-    <label>Skill Name:</label><br>
-    <input type="text" name="skill_name" value="<?= sanitize_input($skill['skill_name']) ?>" required><br><br>
+    <div class="page-header">
+        <h2>Edit Skill</h2>
+        <a class="btn-back" href="dashboard.php">← Back to Dashboard</a>
+    </div>
 
-    <label>Level:</label><br>
-    <input type="text" name="level" value="<?= sanitize_input($skill['level']) ?>"><br><br>
+    <?php if (!empty($errors)): ?>
+        <div class="error-box">
+            <?php foreach ($errors as $err): ?>
+                <p><?= $err ?></p>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 
-    <label>Category:</label><br>
-    <input type="text" name="category" value="<?= sanitize_input($skill['category']) ?>"><br><br>
+    <form method="POST" class="form-box">
 
-    <button type="submit">Update</button>
-</form>
+        <label>Skill Name:</label>
+        <input type="text" name="skill_name" value="<?= sanitize_input($skill['skill_name']) ?>" required>
 
-<p><a href="dashboard.php">Cancel</a></p>
-</body>
-</html>
+        <label>Level:</label>
+        <input type="text" name="level" value="<?= sanitize_input($skill['level']) ?>">
+
+        <label>Category:</label>
+        <input type="text" name="category" value="<?= sanitize_input($skill['category']) ?>">
+
+        <button type="submit" class="btn-primary">Update Skill</button>
+    </form>
+
+</div>
+
+<?php include '../includes/footer.php'; ?>
