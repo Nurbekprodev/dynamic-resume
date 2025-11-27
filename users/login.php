@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
-            // Correct login
+            // Login success
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
 
@@ -30,37 +30,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = "Invalid username or password.";
         }
     } else {
-        // Show first validation error
         $error = $valid_username !== true ? $valid_username : $valid_password;
     }
 }
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-</head>
-<body>
+<?php require_once '../includes/header.php'; ?>
 
-<h2>Login</h2>
+<div class="login-page-wrapper container">
 
-<?php if ($error): ?>
-    <p style="color:red;"><?= htmlspecialchars($error) ?></p>
-<?php endif; ?>
+    <h2 class="page-title">Login</h2>
 
-<form method="POST" action="">
-    <label>Username:</label><br>
-    <input type="text" name="username" required><br><br>
+    <?php if ($error): ?>
+        <p class="error-text"><?= htmlspecialchars($error) ?></p>
+    <?php endif; ?>
 
-    <label>Password:</label><br>
-    <input type="password" name="password" required><br><br>
+    <form method="POST" action="" class="form-box">
 
-    <button type="submit">Login</button>
-</form>
+        <label>Username</label>
+        <input type="text" name="username" required class="input-field">
 
-<p><a href="register.php">Create an Account</a></p>
+        <label>Password</label>
+        <input type="password" name="password" required class="input-field">
 
-</body>
-</html>
+        <button type="submit" class="btn-primary">Login</button>
+    </form>
+
+    <p class="form-link">
+        <a href="register.php">Create an Account</a>
+    </p>
+
+</div>
+
+<?php require_once '../includes/footer.php'; ?>

@@ -13,6 +13,7 @@ if (session_status() === PHP_SESSION_NONE) {
 </head>
 <body>
 <header>
+    
     <div class="container header-container">
         
         <div class="logo">MyResume</div>
@@ -45,6 +46,7 @@ if (session_status() === PHP_SESSION_NONE) {
     </div>
 </header>
 
+<div class="layout-wrapper">
 
 
 <script>

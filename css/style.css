@@ -39,6 +39,13 @@ body {
   line-height: 1.6;
 }
 
+
+/* Main grows automatically, so footer stays bottom */
+body.page-wrapper main {
+    flex: 1;
+}
+
+
 a {
   color: var(--secondary-color);
   text-decoration: none;
@@ -131,6 +138,8 @@ header nav a {
   font-weight: bold;
 }
 
+
+
 /* =========================
    Footer Styling
    ========================= */
@@ -142,6 +151,7 @@ header nav a {
   margin-top: var(--space-lg);
   font-size: 0.9rem;
   box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+
 }
 
 .site-footer p {
@@ -509,6 +519,70 @@ a.btn-logout {
   border-left: 3px solid #c00;
   margin-bottom: 15px;
 }
+
+
+/* Sticky footer ONLY on login page */
+.login-page-wrapper {
+    min-height: 75vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+/* Title */
+.login-page-wrapper .page-title {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Form box */
+.login-page-wrapper .form-box {
+    max-width: 400px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 7px rgba(0,0,0,0.1);
+}
+
+/* Input fields */
+.login-page-wrapper .input-field {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+/* Submit button */
+.login-page-wrapper .btn-primary {
+    background: #007bff;
+    border: none;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.login-page-wrapper .btn-primary:hover {
+    background: #0056b3;
+}
+
+/* Error text */
+.login-page-wrapper .error-text {
+    color: red;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* "Already have account?" link */
+.login-page-wrapper .form-link {
+    text-align: center;
+    margin-top: 15px;
+}
+
 
 /* =========================
    Responsive Layout
