@@ -14,7 +14,7 @@
   --spacing: 1rem;
   --border-radius: 6px;
   --max-width: 1100px;
-  --header-padding-x: rem; /* horizontal padding for header */
+  --header-padding-x: 1rem; /* horizontal padding for header */
   --header-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   --space-lg: 2rem;
 }
@@ -60,7 +60,7 @@ a:hover {
    ========================= */
 .container {
   width: 90%;
-  max-width: var(--layout-max-width);
+  max-width: var(--max-width);
   margin: 0 auto;
   padding: var(--space-lg);
 }
@@ -387,6 +387,18 @@ table td a.btn-small.danger {
   background-color: #e74c3c; /* red */
 }
 
+/* Responsive Table Wrapper */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+    min-width: 700px; /* Adjust based on number of columns */
+}
+
+
 /* Table Styling */
 .dashboard-card table {
   width: 100%;
@@ -620,4 +632,108 @@ a.btn-logout {
     flex-direction: column;
     align-items: center;
   }
+}
+
+
+/* =========================
+   MEDIA QUERIES - DYNAMIC
+   ========================= */
+
+/* Tablets & small laptops (≤ 1024px) */
+@media (max-width: 1024px) {
+
+  .container,
+  .header-container,
+  .page-container,
+  .dashboard-container {
+    width: 95%;
+    padding: 1rem;
+  }
+
+  header nav {
+    gap: 0.6rem;
+  }
+
+  .resume-header {
+    gap: 1rem;
+  }
+
+  section {
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
+  }
+}
+
+/* Large phones & small tablets (≤ 768px) */
+@media (max-width: 768px) {
+
+  header {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.8rem;
+  }
+
+  header nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .resume-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .resume-header .profile {
+    flex-direction: column;
+  }
+
+  .skills-list {
+    justify-content: center;
+  }
+
+  .dashboard-card table {
+    font-size: 0.9rem;
+  }
+
+  .page-container {
+    padding: 15px;
+  }
+}
+
+/* Mobile phones (≤ 480px) */
+@media (max-width: 480px) {
+
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.3rem; }
+  h3 { font-size: 1.1rem; }
+
+  .profile img.avatar {
+    width: 90px;
+    height: 90px;
+  }
+
+  section {
+    padding: 1rem;
+  }
+
+  .dashboard-card {
+    padding: 1rem;
+  }
+
+  .dashboard-card td.actions {
+    gap: 4px;
+  }
+
+  .btn-small {
+    width: 100%;
+  }
+}
+
+
+@media (max-width: 600px) {
+    .dashboard-card table th,
+    .dashboard-card table td {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
 }
